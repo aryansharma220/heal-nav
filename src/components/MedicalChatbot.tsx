@@ -14,7 +14,12 @@ import ReactMarkdown from 'react-markdown';
 // Initialize Google Gemini AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-const visionModel = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// Add proper type checking for the API key
+if (!import.meta.env.VITE_GEMINI_API_KEY) {
+  console.error('Gemini API key is not set');
+}
 
 interface Message {
   type: 'user' | 'bot';
@@ -215,70 +220,121 @@ export function MedicalChatbot() {
     setMessages(chat.messages);
   };
 
+  const handleImageAnalysis = async (imageData: string) => {
+    setIsThinking(true);
+    
+    try {
+      const base64Data = imageData.split(',')[1];
+      const parts = [
+        {
+          text: "You are a medical professional. Please analyze this medical image and provide insights about: 1) What it shows 2) Any concerns 3) Recommendations. Include medical disclaimers."
+        },
+        {
+          inlineData: {
+            mimeType: "image/jpeg",
+            data: base64Data
+          }
+        }
+      ];
+
+      try {
+        const result = await visionModel.generateContent(parts);
+        const response = await result.response;
+        
+        if (!response.text()) {
+          throw new Error('Empty response from Gemini');
+        }
+
+        const botMessage: Message = {
+          type: 'bot',
+          content: response.text(),
+          timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, botMessage]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        console.error('Gemini API Error:', error);
+        const errorMessage = error.message || 'Failed to analyze image';
+        throw new Error(`Image analysis failed: ${errorMessage}`);
+      }
+    } catch (error) {
+      console.error('Error in handleImageAnalysis:', error);
+      toast({
+        title: "Image Analysis Failed",
+        description: error instanceof Error ? error.message : "Could not analyze the image. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsThinking(false);
+    }
+  };
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPEG, PNG, etc.)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check file size (5MB limit)
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      // Convert image to base64
       const reader = new FileReader();
+      
       reader.onloadend = async () => {
         const base64Image = reader.result as string;
-
+        
         // Add user message with image
         const userMessage: Message = {
           type: 'user',
-          content: "I've uploaded an image for analysis",
+          content: "I've uploaded a medical image for analysis",
           timestamp: new Date(),
           image: base64Image
         };
 
         setMessages(prev => [...prev, userMessage]);
-        setIsTyping(true);
-
-        try {
-          // Create a parts array for Gemini
-          const parts = [
-            {text: "Analyze this medical image and suggest appropriate medications or treatments. Remember to include disclaimers about consulting healthcare professionals."},
-            {
-              inlineData: {
-                mimeType: file.type,
-                data: base64Image.split(',')[1] // Remove the data:image/jpeg;base64, prefix
-              }
-            }
-          ];
-
-          // Generate response using Gemini Pro Vision
-          const result = await visionModel.generateContent(parts);
-          const response = await result.response;
-          const botResponse = await simulateTyping(response.text());
-
-          const botMessage: Message = {
-            type: 'bot',
-            content: botResponse,
-            timestamp: new Date()
-          };
-
-          setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-          console.error('Error analyzing image:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to analyze the image. Please try again.",
-          });
+        
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
         }
 
-        setIsTyping(false);
+        // Analyze the image
+        await handleImageAnalysis(base64Image);
+      };
+
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read the image file",
+          variant: "destructive",
+        });
       };
 
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Error processing image:', error);
+      console.error('Error in handleImageUpload:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
+        title: "Upload Failed",
         description: "Failed to process the image. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -430,6 +486,10 @@ export function MedicalChatbot() {
     }
   };
 
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="relative">
       <Card className="w-full max-w-3xl mx-auto shadow-xl bg-gradient-to-b from-emerald-50 to-white border-emerald-100">
@@ -539,11 +599,18 @@ export function MedicalChatbot() {
                       }`}
                     >
                       {message.image && (
-                        <img 
-                          src={message.image} 
-                          alt="Uploaded medical image"
-                          className="max-w-full h-auto rounded-lg mb-2"
-                        />
+                        <div className="mb-2 relative">
+                          <img 
+                            src={message.image} 
+                            alt="Uploaded medical image"
+                            className="max-w-[300px] rounded-lg shadow-md"
+                          />
+                          {message.type === 'user' && isThinking && (
+                            <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                              <div className="text-white text-sm">Analyzing image...</div>
+                            </div>
+                          )}
+                        </div>
                       )}
                       <ReactMarkdown 
                         className="text-sm prose prose-sm max-w-none dark:prose-invert prose-headings:mb-2 prose-p:mb-2 prose-ul:mb-2"
@@ -647,13 +714,20 @@ export function MedicalChatbot() {
               )}
             </div>
             <div className="flex gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
               <Button
                 type="button"
                 size="icon"
                 variant="outline"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleImageButtonClick}
                 disabled={isThinking}
-                className="hover:bg-emerald-50"
+                className="hover:bg-emerald-500"
               >
                 <ImageIcon className="h-4 w-4" />
               </Button>
@@ -662,7 +736,7 @@ export function MedicalChatbot() {
                 size="icon"
                 variant="outline"
                 onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                className={`hover:bg-emerald-50 ${isRecording ? 'animate-pulse bg-red-50' : ''}`}
+                className={`hover:bg-emerald-500 ${isRecording ? 'animate-pulse bg-red-500' : ''}`}
               >
                 <Mic className="h-4 w-4" />
               </Button>
