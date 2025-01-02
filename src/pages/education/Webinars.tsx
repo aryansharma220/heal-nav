@@ -24,6 +24,15 @@ const webinars = [
     spotsLeft: 35,
     description: "Understanding the impact of technology on mental health and wellness.",
   },
+  {
+    title: "AI in Healthcare: Opportunities and Challenges",
+    date: "2024-05-10T16:00:00",
+    duration: "90 min",
+    speaker: "Dr. Sarah Thompson",
+    spots: 75,
+    spotsLeft: 50,
+    description: "Explore the transformative impact of AI technologies in the healthcare sector.",
+  },
   // Add more webinars as needed
 ];
 

@@ -3,11 +3,12 @@ import { PageHeader } from "@/components/PageHeader";
 import { Footer } from "@/components/layout/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Scale, Heart, Activity } from "lucide-react";
+import { Calculator, Scale, Heart, Activity, Moon } from "lucide-react";
 import { BMICalculator } from "@/components/tools/BMICalculator";
 import { CalorieCounter } from "@/components/tools/CalorieCounter";
 import { HeartRateCalculator } from "@/components/tools/HeartRateCalculator";
 import { ExercisePlanner } from "@/components/tools/ExercisePlanner";
+import { SleepTracker } from "@/components/tools/SleepTracker";
 import { useState } from "react";
 
 const healthTools = [
@@ -38,6 +39,13 @@ const healthTools = [
     description: "Create a personalized exercise plan based on your fitness goals.",
     action: "Create Plan",
     id: "exercise"
+  },
+  {
+    title: "Sleep Tracker",
+    icon: Moon,
+    description: "Track your sleep duration and get insights about your sleep quality.",
+    action: "Track Sleep",
+    id: "sleep"
   }
 ];
 
@@ -54,15 +62,17 @@ export default function Tools() {
         return <HeartRateCalculator />;
       case "exercise":
         return <ExercisePlanner />;
+      case "sleep":
+        return <SleepTracker />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="flex flex-col bg-gray-50">
       <Navbar />
-      <div className="mt-16">
+      <div className="min-h-[88vh] mt-16">
         <PageHeader
           title="Health Calculators & Tools"
           subtitle="Use our interactive tools to track and improve your health."

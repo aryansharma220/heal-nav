@@ -53,9 +53,9 @@ const articles = [
 
 export default function Articles() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="flex flex-col bg-gray-50">
       <Navbar />
-      <div className="mt-16">
+      <div className="min-h-[88vh] mt-16">
         <PageHeader
           title="Health Education Articles"
           subtitle="Evidence-based articles written by healthcare professionals"

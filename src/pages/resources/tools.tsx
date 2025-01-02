@@ -62,7 +62,7 @@ export default function Tools() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <div className="mt-16">
+      <div className="mt-32">
         <PageHeader
           title="Health Calculators & Tools"
           subtitle="Use our interactive tools to track and improve your health."

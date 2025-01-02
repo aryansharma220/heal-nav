@@ -1,10 +1,31 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Award, Target, Sparkles, Calendar, Star, Trophy, Clock } from "lucide-react";
+import { Users, Award, Target, Sparkles, Calendar, Star, Clock, BookOpen, MessageCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 export function CommunityFeatures() {
+  const communityHighlights = [
+    {
+      title: "Active Members",
+      count: "5,000+",
+      icon: Users,
+      description: "Engaged healthcare professionals"
+    },
+    {
+      title: "Learning Resources",
+      count: "1,000+",
+      icon: BookOpen,
+      description: "Educational materials available"
+    },
+    {
+      title: "Monthly Events",
+      count: "25+",
+      icon: Calendar,
+      description: "Professional development sessions"
+    }
+  ];
+
   const challenges = [
     {
       title: "30-Day Yoga Challenge",
@@ -23,46 +44,22 @@ export function CommunityFeatures() {
       progress: 40,
       rewards: ["Recipe Book", "Cooking Session"],
       difficulty: "Beginner"
-    },
-    {
-      title: "Monsoon Wellness",
-      participants: 189,
-      daysLeft: 15,
-      description: "Staying healthy during monsoon season",
-      progress: 25,
-      rewards: ["Wellness Guide", "Health Kit"],
-      difficulty: "Easy"
-    }
-  ];
-
-  const achievements = [
-    {
-      title: "Wellness Warrior",
-      description: "Completed 30 days of consistent practice",
-      icon: Trophy,
-      date: "2023-12-25"
-    },
-    {
-      title: "Community Guide",
-      description: "Helped 50+ members in their journey",
-      icon: Users,
-      date: "2023-12-20"
     }
   ];
 
   const quickActions = [
     {
-      title: "Find Yoga Partner",
+      title: "Find Study Partner",
       icon: Users,
       action: "Connect"
     },
     {
-      title: "Join Meditation Group",
-      icon: Sparkles,
+      title: "Join Discussion Group",
+      icon: MessageCircle,
       action: "Join"
     },
     {
-      title: "Ayurvedic Consultation",
+      title: "Book Consultation",
       icon: Target,
       action: "Book"
     }
@@ -73,21 +70,21 @@ export function CommunityFeatures() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-emerald-500" />
-            Your Achievements
+            <Award className="h-5 w-5 text-emerald-500" />
+            Community Overview
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                <achievement.icon className="h-5 w-5 text-emerald-500 mt-1" />
+          <div className="grid gap-4">
+            {communityHighlights.map((stat, index) => (
+              <div key={index} className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <stat.icon className="w-6 h-6 text-primary" />
+                </div>
                 <div>
-                  <h4 className="font-medium">{achievement.title}</h4>
-                  <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Achieved on {new Date(achievement.date).toLocaleDateString('en-IN')}
-                  </p>
+                  <h4 className="font-medium">{stat.title}</h4>
+                  <p className="text-2xl font-bold text-primary mt-1">{stat.count}</p>
+                  <p className="text-sm text-muted-foreground">{stat.description}</p>
                 </div>
               </div>
             ))}
