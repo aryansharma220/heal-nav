@@ -5,12 +5,20 @@ import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Bell, Calendar, Clock, Pill, Check, X, Plus } from "lucide-react";
+import { Bell, Calendar, Clock, Pill, Check, X, Plus, Trash2, Filter, MoreVertical } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Notification {
   id: string;
@@ -20,6 +28,7 @@ interface Notification {
   icon: any;
   active: boolean;
   type: string;
+  category: 'all' | 'medication' | 'appointment' | 'exercise';
 }
 
 interface Preference {
@@ -37,6 +46,7 @@ const initialNotifications: Notification[] = [
     icon: Pill,
     active: true,
     type: "medication",
+    category: 'medication',
   },
   {
     id: "2",
@@ -46,6 +56,7 @@ const initialNotifications: Notification[] = [
     icon: Calendar,
     active: true,
     type: "appointment",
+    category: 'appointment',
   },
   {
     id: "3",
@@ -55,6 +66,7 @@ const initialNotifications: Notification[] = [
     icon: Clock,
     active: false,
     type: "exercise",
+    category: 'exercise',
   },
 ];
 
@@ -75,6 +87,8 @@ export default function Notifications() {
     type: "medication",
     time: "",
   });
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const { toast } = useToast();
 
   const toggleNotification = (id: string) => {
@@ -125,6 +139,7 @@ export default function Notifications() {
       icon: iconMap[newReminder.type] || Bell,
       active: true,
       type: newReminder.type,
+      category: 'medication',
     };
 
     setNotificationsList((prev) => [newNotification, ...prev]);
@@ -157,6 +172,26 @@ export default function Notifications() {
     });
   };
 
+  const handleDelete = (id: string) => {
+    setNotificationsList((prev) => prev.filter((notification) => notification.id !== id));
+    toast({
+      title: "Notification Deleted",
+      description: "The reminder has been removed.",
+    });
+  };
+
+  const handleBatchAction = (action: 'delete' | 'markDone' | 'snooze') => {
+    switch (action) {
+      case 'delete':
+        setNotificationsList((prev) => 
+          prev.filter((notification) => !selectedNotifications.includes(notification.id))
+        );
+        break;
+      // ... other cases
+    }
+    setSelectedNotifications([]);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -187,53 +222,105 @@ export default function Notifications() {
             </Card>
 
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">Active Reminders</h2>
-              {notificationsList.map((notification) => (
-                <Card key={notification.id} className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex gap-4">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <notification.icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{notification.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {notification.description}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-2">
-                          {notification.time}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={notification.active}
-                      onCheckedChange={() => toggleNotification(notification.id)}
-                    />
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Active Reminders</h2>
+                
+                {selectedNotifications.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBatchAction('delete')}
+                    >
+                      Delete Selected
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBatchAction('markDone')}
+                    >
+                      Mark Selected Done
+                    </Button>
                   </div>
-                  {notification.active && (
-                    <div className="mt-4 pt-4 border-t flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex items-center gap-2"
-                        onClick={() => handleMarkAsDone(notification.id)}
-                      >
-                        <Check className="w-4 h-4" />
-                        Mark as Done
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex items-center gap-2"
-                        onClick={() => handleSnooze(notification.id)}
-                      >
-                        <X className="w-4 h-4" />
-                        Snooze
-                      </Button>
-                    </div>
-                  )}
-                </Card>
-              ))}
+                )}
+              </div>
+
+              <Tabs defaultValue="all" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="medication">Medication</TabsTrigger>
+                  <TabsTrigger value="appointment">Appointments</TabsTrigger>
+                  <TabsTrigger value="exercise">Exercise</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="all" className="space-y-4">
+                  {notificationsList.map((notification) => (
+                    <Card key={notification.id} className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-4 items-center">
+                          <input
+                            type="checkbox"
+                            className="mt-1"
+                            checked={selectedNotifications.includes(notification.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedNotifications([...selectedNotifications, notification.id]);
+                              } else {
+                                setSelectedNotifications(selectedNotifications.filter(id => id !== notification.id));
+                              }
+                            }}
+                          />
+                          <div className="flex items-center justify-center p-2 max-h-10 bg-primary/10 rounded-lg">
+                            <notification.icon className="w-5 h-5 text-emerald-500" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium">{notification.title}</h3>
+                              <Badge variant="outline">{notification.type}</Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {notification.description}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-2">
+                              {notification.time}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={notification.active}
+                            onCheckedChange={() => toggleNotification(notification.id)}
+                          />
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => handleMarkAsDone(notification.id)}>
+                                <Check className="w-4 h-4 mr-2" /> Mark as Done
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSnooze(notification.id)}>
+                                <Clock className="w-4 h-4 mr-2" /> Snooze
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(notification.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" /> Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </TabsContent>
+                
+                {/* Add similar TabsContent for other categories */}
+              </Tabs>
             </div>
 
             <Dialog open={isAddingReminder} onOpenChange={setIsAddingReminder}>
