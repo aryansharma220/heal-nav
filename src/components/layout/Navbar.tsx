@@ -28,49 +28,49 @@ export function Navbar() {
             </Link>
           </div>
           <div className="hidden md:flex items-center space-x-6">
-            <Button variant="outline">
               <Link
                 to="/symptoms"
                 onClick={handleSymptomsClick}
                 className=""
               >
-                Symptoms
-              </Link>
-            </Button>
             <Button variant="outline">
+                Symptoms
+            </Button>
+              </Link>
 
             <Link to="/community" >
+            <Button variant="outline">
               Community
-              </Link>
             </Button>
-            <Button variant="outline">
+              </Link>
               <Link to="/resources">
-                Resources
-              </Link>
-            </Button>
             <Button variant="outline">
-            <Link to="/education" >
-              Education
-            </Link>
+                Resources
             </Button>
-            <Button variant="outline" size="icon" className="rounded-full">
+              </Link>
+            <Link to="/education" >
+            <Button variant="outline">
+              Education
+            </Button>
+            </Link>
 
             <Link
               to="/notifications"
               
               >
-              <Bell className="w-5 h-5" />
-            </Link>
-              </Button>
             <Button variant="outline" size="icon" className="rounded-full">
+              <Bell className="w-5 h-5" />
+              </Button>
+            </Link>
 
             <Link
               to="/medical-bot"
               className="flex items-center gap-2"
               >
+            <Button variant="outline" size="icon" className="rounded-full">
               <Bot className="w-5 h-5" />
-            </Link>
               </Button>
+            </Link>
             <Button>Get Started</Button>
           </div>
         </div>
