@@ -13,8 +13,8 @@ import ReactMarkdown from 'react-markdown';
 
 // Initialize Google Gemini AI
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const visionModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 // Add proper type checking for the API key
 if (!import.meta.env.VITE_GEMINI_API_KEY) {
