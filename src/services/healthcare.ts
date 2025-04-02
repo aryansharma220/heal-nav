@@ -147,7 +147,7 @@ async function fetchFacilities(
   filters: SearchFilters
 ): Promise<HealthcareFacility[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const prompt = generatePrompt(location, filters);
     
     const result = await model.generateContent(prompt);
