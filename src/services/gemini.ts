@@ -162,7 +162,7 @@ Ensure each section is thoroughly populated with specific, actionable informatio
 
 export async function analyzeSymptoms(data: AnalysisData): Promise<AnalysisResponse> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
     const prompt = MEDICAL_ANALYSIS_PROMPT
       .replace("{symptoms}", data.symptoms.join(", "))
